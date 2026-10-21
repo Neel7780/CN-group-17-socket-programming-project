@@ -8,8 +8,8 @@
 static char g_server_ip[64];
 static int g_server_port;
 static char g_topic[64];
-static char g_output_dir[PATH_MAX];
-static char g_topic_dir[PATH_MAX * 2];
+static char g_output_dir[PATH_MAX - 128];
+static char g_topic_dir[PATH_MAX];
 
 static long g_ckpt_kb = 64;                       /* intra-file checkpoint interval */
 static long g_max_retries = DEFAULT_MAX_RETRIES;
@@ -148,8 +148,8 @@ static int recv_files(line_reader_t *lr, uint32_t expected_count, uint64_t expec
             return -1;
         }
 
-        char part_path[PATH_MAX * 2];
-        char final_path[PATH_MAX * 2];
+        char part_path[PATH_MAX + 512];
+        char final_path[PATH_MAX + 512];
         part_path_for(part_path, sizeof(part_path), f_name);
         final_path_for(final_path, sizeof(final_path), f_name);
 
@@ -248,7 +248,7 @@ static int recv_files(line_reader_t *lr, uint32_t expected_count, uint64_t expec
  */
 static void discard_partial_state(void) {
     if (!g_ckpt) return;
-    char part_path[PATH_MAX * 2];
+    char part_path[PATH_MAX + 512];
     for (uint32_t i = 0; i < g_ckpt->file_count; i++) {
         /* The file name is not stored in the checkpoint; scan the directory
          * for leftovers instead. */
@@ -284,7 +284,7 @@ static void rollback_partial_file(void) {
     while ((de = readdir(d)) != NULL) {
         size_t nlen = strlen(de->d_name);
         if (nlen > 5 && strcmp(de->d_name + nlen - 5, ".part") == 0) {
-            char part_path[PATH_MAX * 2];
+            char part_path[PATH_MAX + 512];
             snprintf(part_path, sizeof(part_path), "%s/%s", g_topic_dir, de->d_name);
             struct stat st;
             if (stat(part_path, &st) == 0 && (uint64_t)st.st_size > g_ckpt->cur_off) {

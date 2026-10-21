@@ -23,6 +23,9 @@
 #include <limits.h>
 #include <signal.h>
 #include <dirent.h>
+#if defined(__linux__)
+#include <sys/sendfile.h>
+#endif
 
 /* MSG_NOSIGNAL is Linux/BSD; macOS uses the SO_NOSIGPIPE socket option. */
 #ifndef MSG_NOSIGNAL
