@@ -3,3 +3,5 @@
 *.csv
 Part*/**/server
 Part*/**/client
+*.d
+Part*/tests/test_common
