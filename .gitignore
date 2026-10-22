@@ -1,6 +1,7 @@
 ./Design_Document_Group_021_034_original_backup.pdf 
 *.o
 *.csv
+!Results/*.csv
 Part*/**/server
 Part*/**/client
 *.d
