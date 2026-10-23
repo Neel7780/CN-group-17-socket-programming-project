@@ -265,7 +265,7 @@ static void test_metrics(metrics_mode_t mode) {
     CHECK(count_lines(path, "wall_start_ns,") == 1);
     CHECK(count_lines(path, ",\"a,\"\"b\"\"\",") == 100);  /* CSV quoting */
     CHECK(count_lines(path, "1000,1000001000,server,multi,0,") == 2);
-    CHECK(count_lines(path, ",1000.000,8.000,OK\n") == 100);  /* 1 MB in 1 s = 8 Mbit/s */
+    CHECK(count_lines(path, ",1000.000,1.000,OK\n") == 100);  /* 1 MB in 1 s = 1.000 MB/s */
     unlink(path);
 }
 

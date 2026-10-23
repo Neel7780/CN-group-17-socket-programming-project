@@ -3,12 +3,12 @@
 **Course:** IT305: Computer Networks Lab — Socket Programming Project  
 **Team:** Group 17 (Merged Lab Groups 021 & 034)  
 **Authors:**
-- Manal Patel (202401112)
-- Neel Khatri (202401111)
-- Rio Varghese (202401202)
-- Aaditya Kaushik (202401001)
-- Ayush Rana (202401018)
-- Shaurya Rajput (202401185)
+- **Aaditya Kaushik** (202401001, Group 034) — Part I server: topic-directory map, single/multi-threaded request dispatch
+- **Nisarg Trivedi** (202401129, Group 034) — Part I client: buffered line reader, atomic file reassembly, metrics logger
+- **Niranjan Dangi** (202401042, Group 034) — Fault injection subsystem (SO_LINGER TCP RST) and Part II Case 1 retry loop
+- **Kavish Inani** (202401089, Group 021) — Part II Case 2: 256-bucket session table, high-water mark validation, resume protocol
+- **Neel Khatri** (202401093, Group 021) — Part II Case 2 Enhanced: dynamic work queue, N=4 parallel TCP workers, sendfile
+- **Manal Patel** (202401112, Group 021) — Automated benchmark harnesses, SHA-256 verifier, plot engine, final report integration
 
 ---
 
@@ -19,15 +19,13 @@ This project implements a high-performance, fault-tolerant topic-based file dist
 ```
 .
 ├── Makefile                               # Top-level unified build & packaging Makefile
-├── FinalReport_Group_021_034.pdf          # Consolidated 6-page project report
-├── FinalReport_Group_021_034.md           # Markdown version of final report
-├── Design_Document_Group_021_034_.pdf     # Initial architectural design document
+├── FinalReport_Group_021_034.pdf          # Consolidated 6-page comprehensive project report
 ├── README.md                              # Complete build, run, and evaluation documentation
 ├── Part1/                                 # Baseline single & multi-threaded topic server & client
 ├── Part2_Case1/                           # Fault injection & naive restart retry loop
 ├── Part2_Case2/                           # 256-bucket session table & atomic resumable checkpointing
 ├── Part2_Case2_Enhanced/                  # Dynamic task queue, N=4 parallel TCP workers, zero-copy
-├── Results/                               # Benchmark CSV datasets and high-resolution plots
+├── Results/                               # Benchmark CSV datasets and publication-quality plots
 │   ├── Part1_SingleThread_throughput.[csv|png]
 │   ├── Part1_MultiThread_throughput.[csv|png]
 │   ├── Part2_Case1_throughput.[csv|png]
@@ -37,12 +35,12 @@ This project implements a high-performance, fault-tolerant topic-based file dist
 │   ├── Part2_Case2Enhanced_throughput.[csv|png]
 │   ├── Part2_Case2Enhanced_overhead.png
 │   └── Part2_Comparison_throughput.png
-├── scripts/                               # Automated benchmark and verification harnesses
-│   ├── run_part1.sh
-│   ├── run_part2.sh
-│   ├── verify.sh
-│   └── plot.py
-└── raw-img/                               # Reference Animals-10 dataset (10 topic subdirectories)
+└── scripts/                               # Automated benchmark and verification harnesses
+    ├── run_part1.sh                       # Part I client scalability suite (N=1..16)
+    ├── run_part2.sh                       # Part II fault-sweep benchmark (p=0.0..0.8)
+    ├── verify.sh                          # End-to-end SHA-256 hash & leftover verifier
+    ├── verify_fault_recovery.sh           # Automated multi-case fault recovery test suite
+    └── plot.py                            # Matplotlib publication chart generator
 ```
 
 ---
@@ -69,13 +67,16 @@ All executables adhere strictly to the assignment's automated grading interface:
 # Build all 4 variants
 make all
 
-# Run unit and fault injector tests
+# Run unit tests
 make test
+
+# Run automated multi-case fault recovery test suite (p=0.4)
+make verify-faults
 
 # Clean all binaries and build artifacts
 make clean
 
-# Package official submission tarball (FinalSubmission_Group_021_034.tar.gz)
+# Package official submission archives (FinalSubmission_Group_021_034.zip & .tar.gz)
 make package
 ```
 
@@ -175,15 +176,29 @@ To rigorously test recovery, the Part 2 servers inject ungraceful connection dro
 
 ---
 
-## 6. End-to-End Integrity Verification
+## 6. End-to-End Integrity Verification & Fault Testing
 
-The test harness [`scripts/verify.sh`](file:///home/rio/Projects/CN-group-17-socket-programming-project/scripts/verify.sh) validates full delivery correctness:
+### Automated Multi-Case Fault Recovery Test Suite
+To automatically verify that all three Part II implementations survive non-zero network fault drops, correctly recover, and verify 100% SHA-256 byte parity, run:
+```sh
+make verify-faults
+# Or directly:
+./scripts/verify_fault_recovery.sh
+```
+This script tests Part 2 Case 1 (naive restart), Part 2 Case 2 (session checkpoint resume), and Part 2 Case 2 Enhanced (parallel TCP worker fault isolation) under active fault injection ($p=0.4$), verifying that:
+- Injected TCP RST faults are intercepted and logged
+- Interrupted transfers recover automatically
+- Zero temporary artifacts (`*.part`, `*.ckpt*`, `*.tmp`) remain
+- 100% of downloaded files match source SHA-256 digests
+
+### Standalone File Integrity Verification
+The test harness `scripts/verify.sh` validates full delivery correctness against any source dataset directory:
 1. Checks that zero temporary artifacts (`*.part`, `*.ckpt*`, `*.tmp`) remain in `<output_dir>/<topic>/`.
-2. Verifies that the source and destination file counts match.
-3. Computes cryptographic SHA-256 hashes of every file in the source and destination directories, asserting a byte-for-byte exact match.
+2. Verifies that source and destination file counts match.
+3. Computes cryptographic SHA-256 hashes of every file, asserting exact matches.
 
 ```sh
-./scripts/verify.sh ./raw-img /tmp/output mucca
+./scripts/verify.sh /path/to/dataset /tmp/output mucca
 ```
 
 ---
@@ -201,4 +216,7 @@ To rerun the full experiment suite and regenerate all throughput and overhead pl
 # Regenerate visualization plots from CSV data into Results/
 python3 scripts/plot.py
 ```
+> [!NOTE]
+> All throughput metrics are reported in **MB/s** (MegaBytes per second, $10^6$ bytes/sec) throughout datasets (`throughput_mb_s`), plots, and the project report.
+
 All generated datasets and high-resolution plots are stored under `Results/`.

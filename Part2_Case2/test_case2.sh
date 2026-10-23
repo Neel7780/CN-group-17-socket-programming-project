@@ -71,8 +71,13 @@ if [ "$LEFTOVER" -ne 0 ]; then
 fi
 
 echo "Verifying SHA-256 checksums across downloaded files..."
-( cd "$DATASET_DIR/$TOPIC" && find . -type f -exec shasum -a 256 {} \; | sort ) > /tmp/case2_expected_$$.txt
-( cd "$OUT_DIR/$TOPIC" && find . -type f -exec shasum -a 256 {} \; | sort ) > /tmp/case2_actual_$$.txt
+if command -v sha256sum >/dev/null 2>&1; then
+    ( cd "$DATASET_DIR/$TOPIC" && find . -type f -exec sha256sum {} + | sort ) > /tmp/case2_expected_$$.txt
+    ( cd "$OUT_DIR/$TOPIC" && find . -type f -exec sha256sum {} + | sort ) > /tmp/case2_actual_$$.txt
+else
+    ( cd "$DATASET_DIR/$TOPIC" && find . -type f -exec shasum -a 256 {} + | sort ) > /tmp/case2_expected_$$.txt
+    ( cd "$OUT_DIR/$TOPIC" && find . -type f -exec shasum -a 256 {} + | sort ) > /tmp/case2_actual_$$.txt
+fi
 
 if diff -q /tmp/case2_expected_$$.txt /tmp/case2_actual_$$.txt >/dev/null; then
     echo "[+] SUCCESS: All $SRC_COUNT files verified with 100% integrity (0 mismatches)!"

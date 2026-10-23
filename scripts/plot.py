@@ -94,29 +94,30 @@ def plot_part1_mode(csv_name, png_name, mode_title, color):
 
     df["n_clients"] = pd.to_numeric(df["n_clients"], errors="coerce")
 
-    # If Part1 raw client metrics row: throughput_mbps, duration_ms, payload_bytes
-    if "throughput_mbps" in df.columns:
-        df["throughput_mbps"] = pd.to_numeric(df["throughput_mbps"], errors="coerce")
+    # If Part1 raw client metrics row: throughput_mb_s, throughput_mbps, duration_ms, payload_bytes
+    tput_col = "throughput_mb_s" if "throughput_mb_s" in df.columns else "throughput_mbps"
+    if tput_col in df.columns:
+        df["throughput_mb_s"] = pd.to_numeric(df[tput_col], errors="coerce")
     else:
-        # compute from payload and duration
-        df["throughput_mbps"] = (df["payload_bytes"] / 1e6) / (df["duration_ms"] / 1000.0)
+        # compute from payload and duration in MB/s
+        df["throughput_mb_s"] = (df["payload_bytes"] / 1e6) / (df["duration_ms"] / 1000.0)
 
     # Compute aggregate and per-client metrics
     grouped = df.groupby("n_clients").agg(
-        mean_client_tput=("throughput_mbps", "mean"),
-        std_client_tput=("throughput_mbps", "std"),
+        mean_client_tput=("throughput_mb_s", "mean"),
+        std_client_tput=("throughput_mb_s", "std"),
         total_payload=("payload_bytes", "sum"),
         max_duration_ms=("duration_ms", "max"),
     ).reset_index()
 
     # Aggregate throughput across all concurrent clients
-    grouped["agg_throughput_mbps"] = (
+    grouped["agg_throughput_mb_s"] = (
         (grouped["total_payload"] / 1e6) / (grouped["max_duration_ms"] / 1000.0)
     ).fillna(grouped["mean_client_tput"] * grouped["n_clients"])
 
     fig, ax1 = plt.subplots(figsize=(7.5, 4.5))
 
-    ax1.plot(grouped["n_clients"], grouped["agg_throughput_mbps"],
+    ax1.plot(grouped["n_clients"], grouped["agg_throughput_mb_s"],
              marker="o", color=color, label="Aggregate Throughput", linewidth=2.5)
     ax1.plot(grouped["n_clients"], grouped["mean_client_tput"],
              marker="s", linestyle="--", color=PALETTE["accent"],
@@ -149,11 +150,12 @@ def plot_part2_throughput(csv_name, png_name, case_title, color):
         return
 
     df["fault_prob"] = pd.to_numeric(df["fault_prob"], errors="coerce")
-    df["throughput_mbps"] = pd.to_numeric(df["throughput_mbps"], errors="coerce")
+    tput_col = "throughput_mb_s" if "throughput_mb_s" in df.columns else "throughput_mbps"
+    df["throughput_mb_s"] = pd.to_numeric(df[tput_col], errors="coerce")
 
     grouped = df.groupby("fault_prob").agg(
-        mean_tput=("throughput_mbps", "mean"),
-        std_tput=("throughput_mbps", "std"),
+        mean_tput=("throughput_mb_s", "mean"),
+        std_tput=("throughput_mb_s", "std"),
     ).reset_index()
 
     fig, ax = plt.subplots(figsize=(7.5, 4.5))
@@ -232,10 +234,11 @@ def plot_comparison():
         if df is None or df.empty:
             continue
         df["fault_prob"] = pd.to_numeric(df["fault_prob"], errors="coerce")
-        df["throughput_mbps"] = pd.to_numeric(df["throughput_mbps"], errors="coerce")
+        tput_col = "throughput_mb_s" if "throughput_mb_s" in df.columns else "throughput_mbps"
+        df["throughput_mb_s"] = pd.to_numeric(df[tput_col], errors="coerce")
 
-        grouped = df.groupby("fault_prob")["throughput_mbps"].mean().reset_index()
-        ax.plot(grouped["fault_prob"], grouped["throughput_mbps"],
+        grouped = df.groupby("fault_prob")["throughput_mb_s"].mean().reset_index()
+        ax.plot(grouped["fault_prob"], grouped["throughput_mb_s"],
                 style, color=color, label=label, linewidth=2.5, markersize=8)
         plotted += 1
 

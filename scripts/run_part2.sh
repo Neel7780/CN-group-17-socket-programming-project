@@ -53,7 +53,7 @@ for CASE in "${CASES[@]}"; do
     esac
 
     CSV_OUT="$RESULTS_DIR/Part2_${CASE}_throughput.csv"
-    echo "fault_prob,run,case,useful_bytes,wire_bytes,redundant_bytes,duration_ms,throughput_mbps,attempts,status" > "$CSV_OUT"
+    echo "fault_prob,run,case,useful_bytes,wire_bytes,redundant_bytes,duration_ms,throughput_mb_s,attempts,status" > "$CSV_OUT"
 
     # Compile if Makefile is present
     if [ -f "$BIN_DIR/Makefile" ]; then

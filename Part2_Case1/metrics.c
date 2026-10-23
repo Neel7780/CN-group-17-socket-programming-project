@@ -5,7 +5,7 @@
 #define METRICS_HEADER \
     "wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes," \
     "wire_bytes,useful_bytes,redundant_bytes,attempts,wait_ms,duration_ms," \
-    "throughput_mbps,wire_throughput_mbps,status\n"
+    "throughput_mb_s,wire_throughput_mb_s,status\n"
 
 typedef struct metrics_item {
     struct metrics_item *next;
@@ -48,8 +48,8 @@ static int format_row(char *buf, size_t cap, const metrics_row_t *r) {
     csv_field(status, sizeof(status), r->status);
 
     double secs = (double)r->duration_ns / 1e9;
-    double mbps = secs > 0 ? (double)r->useful_bytes * 8.0 / secs / 1e6 : 0.0;
-    double wire_mbps = secs > 0 ? (double)r->wire_bytes * 8.0 / secs / 1e6 : 0.0;
+    double mbps = secs > 0 ? (double)r->useful_bytes / secs / 1e6 : 0.0;
+    double wire_mbps = secs > 0 ? (double)r->wire_bytes / secs / 1e6 : 0.0;
     int len = snprintf(buf, cap,
                        "%" PRIu64 ",%" PRIu64 ",%s,%s,%" PRIu64 ",%s,%" PRIu32 ",%" PRIu64
                        ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu32 ",%.3f,%.3f,%.3f,%.3f,%s\n",

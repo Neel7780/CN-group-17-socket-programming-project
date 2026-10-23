@@ -13,7 +13,7 @@ server
 client
 Part*/**/server
 Part*/**/client
-Part*/tests/test_common
+Part*/tests/test_*
 
 # Intermediate & Temporary transfer files
 *.tmp
