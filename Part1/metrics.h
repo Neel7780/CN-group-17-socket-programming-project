@@ -9,7 +9,7 @@
  * One row is appended per completed (or failed) topic transfer:
  *
  *   wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes,
- *   wire_bytes,wait_ms,duration_ms,throughput_mbps,status
+ *   wire_bytes,wait_ms,duration_ms,throughput_mb_s,status
  *
  * wall_start_ns/wall_end_ns are CLOCK_REALTIME epoch nanoseconds so rows from
  * several client processes on one node can be merged: the aggregate transfer

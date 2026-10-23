@@ -1,4 +1,4 @@
-fault_prob,run,case,useful_bytes,wire_bytes,redundant_bytes,duration_ms,throughput_mbps,attempts,status
+fault_prob,run,case,useful_bytes,wire_bytes,redundant_bytes,duration_ms,throughput_mb_s,attempts,status
 0.0,1,Case1,25410240,25703859,293619,287.81,88.29,1,SUCCESS
 0.0,2,Case1,25410240,26052382,642142,307.54,82.62,1,SUCCESS
 0.0,3,Case1,25410240,25410240,0,284.7,89.25,1,SUCCESS

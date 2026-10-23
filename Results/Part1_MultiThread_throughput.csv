@@ -1,4 +1,4 @@
-n_clients,wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes,wire_bytes,wait_ms,duration_ms,throughput_mbps,status
+n_clients,wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes,wire_bytes,wait_ms,duration_ms,throughput_mb_s,status
 1,1729600000009704900,1729600000286940053,client,multi_n1,1,mucca,1860,25410240,25434479,9.705,277.235,91.656,COMPLETE
 2,1729600000008261273,1729600000295086756,client,multi_n2,1,mucca,1860,25410240,25428783,8.261,286.825,88.591,COMPLETE
 2,1729600000006257967,1729600000291800600,client,multi_n2,2,mucca,1860,25410240,25424506,6.258,285.543,88.989,COMPLETE

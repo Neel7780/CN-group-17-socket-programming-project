@@ -10,7 +10,7 @@
  *
  *   wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes,
  *   wire_bytes,useful_bytes,redundant_bytes,attempts,wait_ms,duration_ms,
- *   throughput_mbps,wire_throughput_mbps,status
+ *   throughput_mb_s,wire_throughput_mb_s,status
  *
  * The first thirteen columns are the Part I row format, so the same analysis
  * script reads the Part I and the Part II Case 1 CSVs. The four extra
@@ -21,9 +21,9 @@
  *                       discarded because the attempt was cut (the cost of
  *                       having no session management)
  *   attempts            number of GET attempts the client needed
- *   wire_throughput_mbps  wire_bytes * 8 / duration, i.e. the rate the data
+ *   wire_throughput_mb_s  wire_bytes / duration (in MB/s), i.e. the rate the data
  *                       actually moved, as opposed to the goodput in
- *                       throughput_mbps
+ *                       throughput_mb_s
  *
  * wall_start_ns/wall_end_ns are CLOCK_REALTIME epoch nanoseconds so rows from
  * several client processes on one node can be merged: the aggregate transfer

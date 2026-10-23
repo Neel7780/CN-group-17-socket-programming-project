@@ -59,7 +59,7 @@ PORT=$PORT_BASE
 for MODE in single multi; do
     CSV_OUT="$RESULTS_DIR/Part1_${MODE^}Thread_throughput.csv"
     echo "[*] Initializing $CSV_OUT"
-    echo "n_clients,wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes,wire_bytes,wait_ms,duration_ms,throughput_mbps,status" > "$CSV_OUT"
+    echo "n_clients,wall_start_ns,wall_end_ns,role,mode,conn_id,topic,files,payload_bytes,wire_bytes,wait_ms,duration_ms,throughput_mb_s,status" > "$CSV_OUT"
 
     for N in 1 2 4 8 16; do
         echo "----------------------------------------------------------"
