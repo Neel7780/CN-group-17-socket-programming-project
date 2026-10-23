@@ -1,9 +1,32 @@
-./Design_Document_Group_021_034_original_backup.pdf 
+# OS & Editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts & binaries
 *.o
-*.csv
-!Results/*.csv
+*.obj
+*.d
+server
+client
 Part*/**/server
 Part*/**/client
-*.d
 Part*/tests/test_common
+
+# Intermediate & Temporary transfer files
+*.tmp
+*.part
+*.ckpt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local benchmark logs (preserve benchmark datasets in Results/)
+*.csv
+!Results/*.csv
+
+# Tooling output
 /graphify-out
