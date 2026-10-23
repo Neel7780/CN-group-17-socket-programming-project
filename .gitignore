@@ -30,3 +30,7 @@ __pycache__/
 
 # Tooling output
 /graphify-out
+
+# Submission archives
+*.zip
+*.tar.gz
