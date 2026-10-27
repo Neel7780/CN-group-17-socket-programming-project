@@ -28,8 +28,6 @@ int transfer_send_topic(int fd, const topic_t *topic, transfer_stats_t *stats) {
         if (hlen <= 0) goto done;
         if (send_all(fd, hdr, (size_t)hlen) != (ssize_t)hlen) goto done;
 
-        log_msg(LOG_DEBUG, "TX FILE idx=%u size=%" PRIu64 " name=%s", idx, fe->size, fe->name);
-
         if (fe->size == 0) {
             local.files_done++;
             continue;

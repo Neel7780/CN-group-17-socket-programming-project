@@ -33,7 +33,6 @@ int transfer_send_topic(int fd, const topic_t *topic, fault_plan_t *fp, bool use
             log_msg(LOG_INFO, "Connection cut while sending the FILE header of %s", fe->name);
             goto done;
         }
-        log_msg(LOG_DEBUG, "TX FILE idx=%u size=%" PRIu64 " name=%s", idx, fsize, fe->name);
 
         if (fsize == 0) {                 /* Empty file: the header is the whole file */
             local.files_done++;
