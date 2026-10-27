@@ -1,6 +1,10 @@
 #define _GNU_SOURCE
 #include "fault.h"
+#ifdef __APPLE__
 #include <sys/uio.h>
+#else
+#include <sys/sendfile.h>
+#endif
 
 void fault_plan_init(fault_plan_t *fp, double p, uint64_t rem_payload, uint32_t n_conns, unsigned short seed_state[3]) {
     fp->p = p;
@@ -21,7 +25,7 @@ void fault_plan_init(fault_plan_t *fp, double p, uint64_t rem_payload, uint32_t 
             double u_cut = erand48(seed_state);
             fp->cut_bytes = (uint64_t)(u_cut * (double)(share - 1));
         }
-        log_msg(LOG_INFO, "Fault planned: p=%.2f, share=%lu, cut_at=%lu", p, share, fp->cut_bytes);
+        log_msg(LOG_INFO, "Fault planned: p=%.2f, share=%" PRIu64 ", cut_at=%" PRIu64, p, share, fp->cut_bytes);
     }
 }
 
@@ -118,7 +122,7 @@ ssize_t fault_sendfile(int out_fd, int in_fd, off_t *offset, size_t count, fault
         fp->bytes_written += (uint64_t)s;
 
         if (fp->bytes_written >= fp->cut_bytes) {
-            log_msg(LOG_INFO, "Fault executed in sendfile: cut at %lu bytes", fp->cut_bytes);
+            log_msg(LOG_INFO, "Fault executed in sendfile: cut at %" PRIu64 " bytes", fp->cut_bytes);
             fault_abort(out_fd);
             return -1;
         }

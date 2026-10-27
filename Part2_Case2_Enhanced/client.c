@@ -144,7 +144,7 @@ static void *worker_thread_main(void *arg) {
             uint64_t f_size = 0;
             uint64_t f_start = 0;
             char f_name[256];
-            if (sscanf(line, "FILE %u %llu %llu %255s", &f_idx, &f_size, &f_start, f_name) != 4) {
+            if (sscanf(line, "FILE %u %" SCNu64 " %" SCNu64 " %255s", &f_idx, &f_size, &f_start, f_name) != 4) {
                 batch_success = false;
                 break;
             }
@@ -303,8 +303,8 @@ int main(int argc, char *argv[]) {
             return EXIT_TOPIC_NOT_FOUND;
         }
 
-        if (sscanf(resp, "SESSION %32s %u %llu", g_sid, &file_count, &total_bytes) == 3) {
-            log_msg(LOG_INFO, "Session established: sid=%s, files=%u, bytes=%lu",
+        if (sscanf(resp, "SESSION %32s %u %" SCNu64, g_sid, &file_count, &total_bytes) == 3) {
+            log_msg(LOG_INFO, "Session established: sid=%s, files=%u, bytes=%" PRIu64,
                     g_sid, file_count, total_bytes);
 
             /* Receive manifest */
