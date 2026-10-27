@@ -225,7 +225,9 @@ static int recv_files(line_reader_t *lr, uint32_t expected_count, uint64_t expec
             uint64_t ck_off = g_ckpt->cur_off;
             bool this_file_checkpointed = (f_idx == ck_idx) && (ck_off > 0) && (ck_off <= f_start + transferred);
             if (this_file_checkpointed) {
-                truncate(part_path, (off_t)ck_off);
+                if (truncate(part_path, (off_t)ck_off) != 0) {
+                    log_msg(LOG_WARN, "Failed to truncate %s: %s", part_path, strerror(errno));
+                }
             } else {
                 unlink(part_path);
             }
@@ -288,7 +290,9 @@ static void rollback_partial_file(void) {
             snprintf(part_path, sizeof(part_path), "%s/%s", g_topic_dir, de->d_name);
             struct stat st;
             if (stat(part_path, &st) == 0 && (uint64_t)st.st_size > g_ckpt->cur_off) {
-                truncate(part_path, (off_t)g_ckpt->cur_off);
+                if (truncate(part_path, (off_t)g_ckpt->cur_off) != 0) {
+                    log_msg(LOG_WARN, "Failed to truncate %s: %s", part_path, strerror(errno));
+                }
                 log_msg(LOG_INFO, "Rolled back partial file %s to %" PRIu64 " bytes",
                         de->d_name, g_ckpt->cur_off);
             }
@@ -368,7 +372,8 @@ int main(int argc, char *argv[]) {
     for (attempt = 0; attempt < g_max_retries; attempt++) {
         int fd = connect_to_server();
         if (fd < 0) {
-            usleep((useconds_t)g_backoff_ms * 1000);
+            usleep((useconds_t)backoff * 1000);
+            backoff = (backoff * 2 < g_backoff_max_ms) ? backoff * 2 : g_backoff_max_ms;
             continue;
         }
         g_attempts++;

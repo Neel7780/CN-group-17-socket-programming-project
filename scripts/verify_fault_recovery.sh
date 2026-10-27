@@ -53,6 +53,18 @@ echo ""
 
 FAILURES=0
 
+wait_for_port() {
+    local port="$1"
+    for _ in $(seq 1 450); do
+        if (echo > /dev/tcp/127.0.0.1/"$port") 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.1
+    done
+    echo "[-] Error: server failed to listen on port $port within 45 seconds"
+    return 1
+}
+
 # ------------------------------------------------------------------------------
 # 1. Test Part II Case 1: Naive Retry (Restart From Byte 0)
 # ------------------------------------------------------------------------------
@@ -68,7 +80,7 @@ mkdir -p "$C1_OUT"
 C1_PORT=9501
 "$C1_DIR/server" "$C1_PORT" "$DATASET_DIR" 0.40 log=2 > "$C1_LOG" 2>&1 &
 C1_PID=$!
-sleep 0.8
+wait_for_port "$C1_PORT"
 
 "$C1_DIR/client" 127.0.0.1 "$C1_PORT" "$TOPIC" "$C1_OUT" log=2 >/dev/null 2>&1 || true
 kill -TERM "$C1_PID" 2>/dev/null || true
@@ -113,7 +125,7 @@ mkdir -p "$C2_OUT"
 C2_PORT=9502
 "$C2_DIR/server" "$C2_PORT" "$DATASET_DIR" 0.40 log=2 > "$C2_LOG" 2>&1 &
 C2_PID=$!
-sleep 0.8
+wait_for_port "$C2_PORT"
 
 "$C2_DIR/client" 127.0.0.1 "$C2_PORT" "$TOPIC" "$C2_OUT" log=2 > "$C2_CLI_LOG" 2>&1 || true
 kill -TERM "$C2_PID" 2>/dev/null || true
@@ -135,6 +147,11 @@ if [ "$C2_DL_COUNT" -eq "$SRC_FILES" ] && [ "$C2_LEFTOVERS" -eq 0 ]; then
     rm -f /tmp/c2_exp_$$.txt /tmp/c2_act_$$.txt
 else
     echo "[FAIL] Part II Case 2: File count mismatch (expected $SRC_FILES, got $C2_DL_COUNT, remnants: $C2_LEFTOVERS)!"
+    echo "--- C2 SERVER LOG (last 20 lines) ---"
+    tail -n 20 "$C2_LOG" 2>/dev/null || true
+    echo "--- C2 CLIENT LOG (last 20 lines) ---"
+    tail -n 20 "$C2_CLI_LOG" 2>/dev/null || true
+    echo "-------------------------------------"
     FAILURES=$((FAILURES + 1))
 fi
 rm -rf "$C2_OUT" "$C2_LOG" "$C2_CLI_LOG"
@@ -154,11 +171,11 @@ mkdir -p "$C2E_OUT"
 (cd "$C2E_DIR" && make -s clean && make -s)
 
 C2E_PORT=9503
-"$C2E_DIR/server" "$C2E_PORT" "$DATASET_DIR" 0.40 > "$C2E_LOG" 2>&1 &
+"$C2E_DIR/server" "$C2E_PORT" "$DATASET_DIR" 0.40 log=2 > "$C2E_LOG" 2>&1 &
 C2E_PID=$!
-sleep 0.8
+wait_for_port "$C2E_PORT"
 
-"$C2E_DIR/client" 127.0.0.1 "$C2E_PORT" "$TOPIC" "$C2E_OUT" > "$C2E_CLI_LOG" 2>&1 || true
+"$C2E_DIR/client" 127.0.0.1 "$C2E_PORT" "$TOPIC" "$C2E_OUT" log=2 > "$C2E_CLI_LOG" 2>&1 || true
 kill -TERM "$C2E_PID" 2>/dev/null || true
 wait "$C2E_PID" 2>/dev/null || true
 
@@ -178,6 +195,11 @@ if [ "$C2E_DL_COUNT" -eq "$SRC_FILES" ] && [ "$C2E_LEFTOVERS" -eq 0 ]; then
     rm -f /tmp/c2e_exp_$$.txt /tmp/c2e_act_$$.txt
 else
     echo "[FAIL] Part II Case 2 Enhanced: File count mismatch (expected $SRC_FILES, got $C2E_DL_COUNT, remnants: $C2E_LEFTOVERS)!"
+    echo "--- C2E SERVER LOG (last 20 lines) ---"
+    tail -n 20 "$C2E_LOG" 2>/dev/null || true
+    echo "--- C2E CLIENT LOG (last 20 lines) ---"
+    tail -n 20 "$C2E_CLI_LOG" 2>/dev/null || true
+    echo "--------------------------------------"
     FAILURES=$((FAILURES + 1))
 fi
 rm -rf "$C2E_OUT" "$C2E_LOG" "$C2E_CLI_LOG"

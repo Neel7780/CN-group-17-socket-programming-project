@@ -192,7 +192,9 @@ static void *worker_thread_main(void *arg) {
             if (!file_ok) {
                 batch_success = false;
                 /* Truncate partial file back to starting checkpoint */
-                truncate(part_path, (off_t)f_start);
+                if (truncate(part_path, (off_t)f_start) != 0) {
+                    log_msg(LOG_ERR, "Failed to truncate %s: %s", part_path, strerror(errno));
+                }
                 break;
             }
 
@@ -265,10 +267,12 @@ int main(int argc, char *argv[]) {
     uint64_t total_bytes = 0;
 
     /* 1. Primary Connection Negotiation */
+    long backoff_ms = 100;
     for (int attempt = 0; attempt < g_max_retries; attempt++) {
         primary_fd = connect_to_server();
         if (primary_fd < 0) {
-            usleep(100000);
+            usleep((useconds_t)backoff_ms * 1000);
+            backoff_ms = (backoff_ms * 2 < 2000) ? backoff_ms * 2 : 2000;
             continue;
         }
 
@@ -279,7 +283,8 @@ int main(int argc, char *argv[]) {
         if (send_all(primary_fd, get_cmd, glen) != glen) {
             close(primary_fd);
             primary_fd = -1;
-            usleep(100000);
+            usleep((useconds_t)backoff_ms * 1000);
+            backoff_ms = (backoff_ms * 2 < 2000) ? backoff_ms * 2 : 2000;
             continue;
         }
 

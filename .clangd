@@ -1,0 +1,22 @@
+CompileFlags:
+  Add:
+    - --target=x86_64-linux-gnu
+    - -std=c11
+    - -D_GNU_SOURCE
+    - -isystem
+    - //wsl.localhost/Ubuntu/usr/include/x86_64-linux-gnu
+    - -isystem
+    - //wsl.localhost/Ubuntu/usr/include
+    - -isystem
+    - //wsl.localhost/Ubuntu/usr/lib/gcc/x86_64-linux-gnu/15/include
+    - -isystem
+    - //wsl$/Ubuntu/usr/include/x86_64-linux-gnu
+    - -isystem
+    - //wsl$/Ubuntu/usr/include
+    - -isystem
+    - //wsl$/Ubuntu/usr/lib/gcc/x86_64-linux-gnu/15/include
+    - -I.
+    - -IPart1
+    - -IPart2_Case1
+    - -IPart2_Case2
+    - -IPart2_Case2_Enhanced
