@@ -21,7 +21,7 @@ int transfer_send_batch(int fd, const topic_t *topic, uint32_t first_idx, uint32
 
         /* 1. Send FILE header */
         char hdr[512];
-        int hlen = snprintf(hdr, sizeof(hdr), "FILE %u %lu %lu %s\n", idx, fsize, start, fname);
+        int hlen = snprintf(hdr, sizeof(hdr), "FILE %u %llu %llu %s\n", idx, (unsigned long long)fsize, (unsigned long long)start, fname);
         if (fault_send(fd, fp, hdr, hlen) != hlen) {
             log_msg(LOG_INFO, "Connection failed while sending FILE header for %s", fname);
             return -1;

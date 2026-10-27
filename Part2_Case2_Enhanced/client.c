@@ -120,8 +120,8 @@ static void *worker_thread_main(void *arg) {
 
         /* Issue FETCH command */
         char fetch_cmd[256];
-        int flen = snprintf(fetch_cmd, sizeof(fetch_cmd), "FETCH %s %u %u %lu\n",
-                            g_sid, task.first_idx, task.last_idx, task.offset);
+        int flen = snprintf(fetch_cmd, sizeof(fetch_cmd), "FETCH %s %u %u %llu\n",
+                            g_sid, task.first_idx, task.last_idx, (unsigned long long)task.offset);
         if (send_all(fd, fetch_cmd, flen) != flen) {
             close(fd);
             fd = -1;
@@ -144,7 +144,7 @@ static void *worker_thread_main(void *arg) {
             uint64_t f_size = 0;
             uint64_t f_start = 0;
             char f_name[256];
-            if (sscanf(line, "FILE %u %lu %lu %255s", &f_idx, &f_size, &f_start, f_name) != 4) {
+            if (sscanf(line, "FILE %u %llu %llu %255s", &f_idx, &f_size, &f_start, f_name) != 4) {
                 batch_success = false;
                 break;
             }
@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
             return EXIT_TOPIC_NOT_FOUND;
         }
 
-        if (sscanf(resp, "SESSION %32s %u %lu", g_sid, &file_count, &total_bytes) == 3) {
+        if (sscanf(resp, "SESSION %32s %u %llu", g_sid, &file_count, &total_bytes) == 3) {
             log_msg(LOG_INFO, "Session established: sid=%s, files=%u, bytes=%lu",
                     g_sid, file_count, total_bytes);
 

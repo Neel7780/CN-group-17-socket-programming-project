@@ -26,7 +26,7 @@ int manifest_receive(line_reader_t *lr, manifest_t *m, uint32_t expected_count, 
         uint32_t idx = 0;
         uint64_t size = 0;
         char name[256];
-        if (sscanf(line, "M %u %lu %255s", &idx, &size, name) != 3) {
+        if (sscanf(line, "M %u %llu %255s", &idx, &size, name) != 3) {
             log_msg(LOG_ERR, "Malformed manifest line: %s", line);
             free(m->files);
             m->files = NULL;

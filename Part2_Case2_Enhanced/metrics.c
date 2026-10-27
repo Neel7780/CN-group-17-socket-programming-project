@@ -22,9 +22,9 @@ void metrics_log_row(const char *role, const char *event, const char *sid, uint3
     if (!g_csv_file) return;
     uint64_t t_now = now_ms();
     pthread_mutex_lock(&g_metrics_mu);
-    fprintf(g_csv_file, "%lu,%s,%s,%s,%u,%s,%u,%lu,%lu,%s\n",
-            t_now, role ? role : "", event ? event : "", sid ? sid : "",
-            conn_id, topic ? topic : "", file_idx, bytes, duration_ms, status ? status : "");
+    fprintf(g_csv_file, "%llu,%s,%s,%s,%u,%s,%u,%llu,%llu,%s\n",
+            (unsigned long long)t_now, role ? role : "", event ? event : "", sid ? sid : "",
+            conn_id, topic ? topic : "", file_idx, (unsigned long long)bytes, (unsigned long long)duration_ms, status ? status : "");
     fflush(g_csv_file);
     pthread_mutex_unlock(&g_metrics_mu);
 }

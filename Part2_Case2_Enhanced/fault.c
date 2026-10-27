@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 #include "fault.h"
-#include <sys/sendfile.h>
+#include <sys/uio.h>
 
 void fault_plan_init(fault_plan_t *fp, double p, uint64_t rem_payload, uint32_t n_conns, unsigned short seed_state[3]) {
     fp->p = p;
@@ -73,7 +73,16 @@ ssize_t fault_sendfile(int out_fd, int in_fd, off_t *offset, size_t count, fault
     if (!fp || !fp->will_fail) {
         size_t total = 0;
         while (total < count) {
+#ifdef __APPLE__
+            struct sf_hdtr hdr = {0};
+            ssize_t s = sendfile(out_fd, in_fd, *offset, offset, &hdr, 0);
+            if (s > 0) {
+                // macOS sendfile updates *offset, but we need to track total for the loop
+                // The total bytes sent is s.
+            }
+#else
             ssize_t s = sendfile(out_fd, in_fd, offset, count - total);
+#endif
             if (s < 0) {
                 if (errno == EINTR) continue;
                 return -1;
@@ -91,9 +100,14 @@ ssize_t fault_sendfile(int out_fd, int in_fd, off_t *offset, size_t count, fault
             return -1;
         }
 
-        uint64_t budget = fp->cut_bytes - fp->bytes_written;
-        size_t chunk = (count - total < budget) ? (count - total) : (size_t)budget;
-        ssize_t s = sendfile(out_fd, in_fd, offset, chunk);
+#ifdef __APPLE__
+            struct sf_hdtr hdr = {0};
+            ssize_t s = sendfile(out_fd, in_fd, *offset, offset, &hdr, 0);
+#else
+            uint64_t budget = fp->cut_bytes - fp->bytes_written;
+            size_t chunk = (count - total < budget) ? (count - total) : (size_t)budget;
+            ssize_t s = sendfile(out_fd, in_fd, offset, chunk);
+#endif
         if (s < 0) {
             if (errno == EINTR) continue;
             return -1;

@@ -158,8 +158,8 @@ static void *client_thread(void *arg) {
 
         /* Send SESSION response */
         char s_hdr[256];
-        int s_len = snprintf(s_hdr, sizeof(s_hdr), "SESSION %s %u %lu\n",
-                             s->sid, top->file_count, top->total_bytes);
+        int s_len = snprintf(s_hdr, sizeof(s_hdr), "SESSION %s %u %llu\n",
+                             s->sid, top->file_count, (unsigned long long)top->total_bytes);
         if (fault_send(fd, &fp, s_hdr, s_len) != s_len) {
             session_release(s);
             close(fd);
@@ -172,8 +172,8 @@ static void *client_thread(void *arg) {
         /* Stream Manifest */
         for (uint32_t i = 0; i < top->file_count; i++) {
             char m_line[512];
-            int m_len = snprintf(m_line, sizeof(m_line), "M %u %lu %s\n",
-                                 i, top->files[i].size, top->files[i].name);
+            int m_len = snprintf(m_line, sizeof(m_line), "M %u %llu %s\n",
+                                 i, (unsigned long long)top->files[i].size, top->files[i].name);
             if (fault_send(fd, &fp, m_line, m_len) != m_len) {
                 session_release(s);
                 close(fd);
