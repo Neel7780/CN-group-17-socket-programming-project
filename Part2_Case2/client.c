@@ -166,10 +166,6 @@ static int recv_files(line_reader_t *lr, uint32_t expected_count, uint64_t expec
                 return -1;
             }
         }
-
-        log_msg(LOG_DEBUG, "RX FILE idx=%u size=%" PRIu64 " start=%" PRIu64 " name=%s",
-                f_idx, f_size, f_start, f_name);
-
         uint64_t remaining = f_size - f_start;
         uint64_t transferred = 0;
         uint64_t since_ckpt = 0;

@@ -28,8 +28,6 @@ int transfer_send_topic(int fd, const topic_t *topic, uint32_t first_idx, uint64
         if (hlen <= 0) return -1;
 
         ssize_t hsent = fault_send(fd, fp, hdr, (size_t)hlen);
-        log_msg(LOG_DEBUG, "TX FILE idx=%u size=%" PRIu64 " start=%" PRIu64 " name=%s",
-                idx, fsize, start, fname);
         if (hsent != hlen) {
             log_msg(LOG_INFO, "Connection cut while sending FILE header for %s", fname);
             return -1;
