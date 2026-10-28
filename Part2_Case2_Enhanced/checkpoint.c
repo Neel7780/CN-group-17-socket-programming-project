@@ -108,6 +108,19 @@ bool ckpt_is_complete(ckpt_t *c, uint32_t file_idx) {
     return done;
 }
 
+bool ckpt_all_complete(ckpt_t *c) {
+    if (!c || c->file_count == 0) return false;
+    pthread_mutex_lock(&c->mu);
+    for (uint32_t i = 0; i < c->file_count; i++) {
+        if ((c->mask[i / 8] & (1 << (i % 8))) == 0) {
+            pthread_mutex_unlock(&c->mu);
+            return false;
+        }
+    }
+    pthread_mutex_unlock(&c->mu);
+    return true;
+}
+
 void ckpt_remove(ckpt_t *c) {
     if (!c) return;
     pthread_mutex_lock(&c->mu);

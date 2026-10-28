@@ -17,6 +17,7 @@ int ckpt_load(ckpt_t *c);
 int ckpt_save_atomic(ckpt_t *c);
 void ckpt_mark_complete(ckpt_t *c, uint32_t file_idx);
 bool ckpt_is_complete(ckpt_t *c, uint32_t file_idx);
+bool ckpt_all_complete(ckpt_t *c);
 void ckpt_remove(ckpt_t *c);
 void ckpt_free(ckpt_t *c);
 

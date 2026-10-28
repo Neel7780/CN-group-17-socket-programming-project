@@ -100,6 +100,7 @@ static void *worker_thread_main(void *arg) {
                 pthread_mutex_unlock(&g_retry_mu);
                 log_msg(LOG_ERR, "Worker %u: Max retries exceeded", wid);
                 workq_push_front(g_workq, task.first_idx, task.last_idx, task.offset);
+                workq_close(g_workq);
                 return NULL;
             }
             g_total_retries++;
@@ -325,10 +326,13 @@ int main(int argc, char *argv[]) {
 
     /* 2. Checkpoint and Work Queue */
     g_ckpt = ckpt_create(g_topic_dir, g_topic, g_sid, file_count);
-    ckpt_load(g_ckpt);
+    if (ckpt_load(g_ckpt) == 0) {
+        snprintf(g_ckpt->sid, sizeof(g_ckpt->sid), "%s", g_sid);
+        ckpt_save_atomic(g_ckpt);
+    }
 
     g_workq = workq_create();
-    manifest_partition_batches(&g_manifest, g_workq, DEFAULT_BATCH_BYTES);
+    manifest_partition_batches(&g_manifest, g_workq, DEFAULT_BATCH_BYTES, g_ckpt);
 
     /* 3. Launch Parallel Worker Threads */
     int n_workers = (int)g_conns;
@@ -363,6 +367,19 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[i], NULL);
     }
     free(threads);
+
+    bool all_done = ckpt_all_complete(g_ckpt);
+    if (!all_done) {
+        log_msg(LOG_ERR, "Download incomplete: retries exhausted with uncompleted tasks remaining");
+        ckpt_free(g_ckpt);
+        manifest_free(&g_manifest);
+        workq_destroy(g_workq);
+
+        uint64_t dur_total = now_ms() - t_start_total;
+        metrics_log_row("client", "INCOMPLETE", g_sid, 0, g_topic, file_count, 0, dur_total, "RETRY_LIMIT");
+        metrics_close();
+        return EXIT_RETRY_LIMIT;
+    }
 
     /* 5. Issue DONE via dedicated final connection if primary was closed */
     int done_fd = connect_to_server();

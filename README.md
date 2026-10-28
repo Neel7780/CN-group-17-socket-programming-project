@@ -163,6 +163,7 @@ To rigorously test recovery, the Part 2 servers inject ungraceful connection dro
   - **Dynamic Task Queue:** The client partitions files into batches and queues them onto a synchronized work queue.
   - **Parallel Workers:** Spawns $N=4$ concurrent worker connections (`ATTACH <sid>`). Workers dequeue tasks, stream files via `FETCH`, and write to disk concurrently.
   - **Isolated Fault Recovery:** If worker connection $i$ suffers a TCP RST fault, only its uncompleted batch chunk is pushed to the head of the work queue. The remaining $N-1$ connections continue streaming at line rate.
+  - **Recovery Mechanism Contrast:** Case 2 uses serialized single-stream byte-offset `RESUME` validated against `hw_pos`. Case 2 Enhanced uses parallel work-queue batch re-scheduling and a bitmask checkpoint (`.ckpt`), avoiding single-stream serialization bottlenecks while ensuring crashed clients resume only remaining uncompleted files.
   ```sh
   cd Part2_Case2_Enhanced
   ./server 8083 ../raw-img 0.3
