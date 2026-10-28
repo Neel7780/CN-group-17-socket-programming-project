@@ -4,6 +4,7 @@
 #include "common.h"
 #include "topics.h"
 #include "workq.h"
+#include "checkpoint.h"
 
 typedef struct {
     file_entry_t *files;
@@ -12,7 +13,7 @@ typedef struct {
 } manifest_t;
 
 int manifest_receive(line_reader_t *lr, manifest_t *m, uint32_t expected_count, uint64_t expected_bytes);
-int manifest_partition_batches(const manifest_t *m, workq_t *q, uint64_t target_batch_bytes);
+int manifest_partition_batches(const manifest_t *m, workq_t *q, uint64_t target_batch_bytes, ckpt_t *ckpt);
 void manifest_free(manifest_t *m);
 
 #endif /* MANIFEST_H */

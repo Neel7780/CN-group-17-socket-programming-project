@@ -60,21 +60,31 @@ int manifest_receive(line_reader_t *lr, manifest_t *m, uint32_t expected_count, 
     return 0;
 }
 
-int manifest_partition_batches(const manifest_t *m, workq_t *q, uint64_t target_batch_bytes) {
+int manifest_partition_batches(const manifest_t *m, workq_t *q, uint64_t target_batch_bytes, ckpt_t *ckpt) {
     if (!m || !q || m->count == 0) return 0;
     if (target_batch_bytes == 0) target_batch_bytes = DEFAULT_BATCH_BYTES;
 
     int batches = 0;
-    uint32_t start_idx = 0;
-    uint64_t cur_batch_bytes = 0;
+    uint32_t i = 0;
+    while (i < m->count) {
+        if (ckpt && ckpt_is_complete(ckpt, i)) {
+            i++;
+            continue;
+        }
 
-    for (uint32_t i = 0; i < m->count; i++) {
-        cur_batch_bytes += m->files[i].size;
-        if (cur_batch_bytes >= target_batch_bytes || i == m->count - 1) {
-            workq_push_back(q, start_idx, i, 0);
-            batches++;
-            start_idx = i + 1;
-            cur_batch_bytes = 0;
+        uint32_t start_idx = i;
+        uint64_t cur_batch_bytes = 0;
+
+        while (i < m->count && (!ckpt || !ckpt_is_complete(ckpt, i))) {
+            cur_batch_bytes += m->files[i].size;
+            if (cur_batch_bytes >= target_batch_bytes || i == m->count - 1 ||
+                (ckpt && (i + 1 < m->count) && ckpt_is_complete(ckpt, i + 1))) {
+                workq_push_back(q, start_idx, i, 0);
+                batches++;
+                i++;
+                break;
+            }
+            i++;
         }
     }
     log_msg(LOG_INFO, "Partitioned manifest into %d parallel batches", batches);
