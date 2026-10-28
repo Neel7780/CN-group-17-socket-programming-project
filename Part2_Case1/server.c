@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
         if (parse_kv_opt(argv[i], "seed", &v)) g_seed = v;
         else if (parse_kv_opt(argv[i], "max_clients", &v)) g_max_clients = v;
         else if (parse_kv_opt(argv[i], "sendfile", &v)) g_sendfile = v;
-        else if (parse_kv_opt(argv[i], "log", &v)) g_log_level = (int)v;
+        else if (parse_kv_opt(argv[i], "log", &v)) g_log_level = (v == 1) ? LOG_INFO : (int)v;
         else if (parse_kv_str(argv[i], "fault_mode", &s)) {
             if (fault_mode_parse(s, &g_fault_mode) != 0) {
                 fprintf(stderr, "Error: unknown fault_mode '%s' (use request or chunk)\n", s);
