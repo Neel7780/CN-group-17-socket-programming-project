@@ -404,7 +404,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 5; i < argc; i++) {
         long v;
-        if (parse_kv_opt(argv[i], "log", &v)) g_log_level = (int)v;
+        if (parse_kv_opt(argv[i], "log", &v)) g_log_level = (v == 1) ? LOG_INFO : (int)v;
         else if (parse_kv_opt(argv[i], "timeout", &v) && v >= 0) o.timeout_s = v;
         else if (parse_kv_opt(argv[i], "max_retries", &v) && v >= 1) o.max_retries = v;
         else if (parse_kv_opt(argv[i], "backoff_ms", &v) && v >= 0) o.backoff_ms = v;

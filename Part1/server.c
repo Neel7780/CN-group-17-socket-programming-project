@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
         long v;
         const char *s;
         if (parse_kv_opt(argv[i], "max_clients", &v)) g_max_clients = v;
-        else if (parse_kv_opt(argv[i], "log", &v)) g_log_level = (int)v;
+        else if (parse_kv_opt(argv[i], "log", &v)) g_log_level = (v == 1) ? LOG_INFO : (int)v;
         else if (parse_kv_str(argv[i], "mode", &s)) {
             if (strcmp(s, "single") == 0) g_multi = false;
             else if (strcmp(s, "multi") == 0) g_multi = true;
@@ -284,6 +284,9 @@ int main(int argc, char *argv[]) {
         }
 
         uint32_t conn_id = next_conn_id();
+        char c_ip[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &caddr.sin_addr, c_ip, sizeof(c_ip));
+        log_msg(LOG_INFO, "Accepted connection %u from %s:%d", conn_id, c_ip, ntohs(caddr.sin_port));
 
         if (!g_multi) {
             /* Single-threaded: serve the client in-place, then loop back to accept(). */

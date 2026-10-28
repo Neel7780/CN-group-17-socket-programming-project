@@ -24,6 +24,7 @@ void log_msg(int level, const char *fmt, ...) {
     vsnprintf(line + off, sizeof(line) - (size_t)off, fmt, args);
     va_end(args);
     fprintf(stderr, "%s\n", line);
+    fflush(stderr);
 }
 
 void lr_init(line_reader_t *lr, int fd) {
